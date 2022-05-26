@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, MongoRuntimeError, ObjectId } = require('mongodb');
 const res = require('express/lib/response');
@@ -21,7 +22,7 @@ async function run() {
         const serviceCollection = client.db('assignment-12').collection('services');
         const orderCollection = client.db('assignment-12').collection('orders');
         const reviewCollection = client.db('assignment-12').collection('reviews');
-
+        const userCollection = client.db('assignment-12').collection('users');
         app.get('/services', async (req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
@@ -36,6 +37,9 @@ async function run() {
             res.send(result);
 
         })
+
+
+
 
         app.post('/orders', async (req, res) => {
             const order = req.body;
@@ -63,6 +67,18 @@ async function run() {
             res.send(result);
         })
 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ result, token });
+        })
 
 
 
