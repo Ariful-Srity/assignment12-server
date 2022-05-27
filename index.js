@@ -82,6 +82,35 @@ async function run() {
 
 
 
+        //my profile----------
+        app.put('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const userProfileInfo = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            let updatedUser;
+            if (userProfileInfo.role) {
+                updatedUser = {
+                    $set: {
+                        role: userProfileInfo.role
+                    }
+                }
+            }
+            else {
+                updatedUser = {
+                    $set: {
+                        location: userProfileInfo.location,
+                        linkedIn: userProfileInfo.linkedIn,
+                        education: userProfileInfo.education,
+                        phone: userProfileInfo.phone
+                    }
+                }
+            }
+            const result = await userCollection.updateOne(filter, updatedUser, options);
+            res.send(result);
+        });
+
+
     }
     finally {
 
