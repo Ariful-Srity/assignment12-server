@@ -74,7 +74,11 @@ async function run() {
 
         })
 
-
+        app.post('/services', async (req, res) => {
+            const newItem = req.body;
+            const result = await serviceCollection.insertOne(newItem);
+            res.send(result);
+        });
 
 
         app.post('/orders', async (req, res) => {
@@ -175,7 +179,20 @@ async function run() {
             res.send({ admin: isAdmin })
         })
 
-
+        app.put('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const order = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedOrder = {
+                $set: {
+                    paymentStatus: order.paymentStatus,
+                    shippingStatus: order.shippingStatus
+                }
+            }
+            const result = await orderCollection.updateOne(filter, updatedOrder, options);
+            res.send(result);
+        });
         //my profile----------
         app.put('/user/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
