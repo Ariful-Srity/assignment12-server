@@ -6,6 +6,7 @@ const { MongoClient, ServerApiVersion, MongoRuntimeError, ObjectId } = require('
 const res = require('express/lib/response');
 const app = express()
 const port = process.env.PORT || 5000;
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
 app.use(cors());
@@ -155,6 +156,16 @@ async function run() {
             }
             const result = await userCollection.updateOne(filter, updateDoc, options);
             res.send(result)
+        });
+        app.post('/create-payment-intents', async (req, res) => {
+            const { totalPrice } = req.body;
+            const amount = totalPrice * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret });
         });
 
         app.get('/admin/:email', async (req, res) => {
